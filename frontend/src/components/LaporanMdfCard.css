@@ -1,0 +1,42 @@
+/*
+ * Selaras dengan .card di Dashboard.css:
+ * - layout, padding, border-radius, shadow, hover effect identik
+ * - warna oranye sebagai pembeda visual dari card yang sudah ada
+ * - <Link> di-reset dari default anchor style
+ */
+.laporan-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  border-radius: 12px;
+  background-color: #ea580c;
+  color: white;
+  cursor: pointer;
+  text-decoration: none;           /* reset default <a> underline */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.laporan-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  color: white;                    /* jaga warna teks tetap putih saat hover */
+}
+
+.laporan-card-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.laporan-card-content h3 {
+  margin: 0 0 4px 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.laporan-card-content p {
+  margin: 0;
+  font-size: 0.8rem;
+  opacity: 0.85;
+}

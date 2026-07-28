@@ -1,4 +1,4 @@
-const pool = require('../config/db');
+const { pool } = require('../config/db');
 
 // Helper: destructure semua field dari request body
 const extractFields = (body) => {

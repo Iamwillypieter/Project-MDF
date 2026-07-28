@@ -8,6 +8,7 @@ const laporanMdfRoutes     = require('./routes/laporanMdfRoutes');
 const laporanChipperRoutes = require('./routes/laporanChipperRoutes');
 const laporanCoolingRoutes = require('./routes/laporanCoolingRoutes');
 const laporanImalRoutes    = require('./routes/laporanImalRoutes');
+const { testConnection } = require('./config/db');
 const initDb = require('./config/initDb');
 
 const app = express();
@@ -62,7 +63,13 @@ app.listen(PORT, '0.0.0.0', async () => {
   console.log(`Server running on:`);
   console.log(`  Local:   http://localhost:${PORT}`);
   console.log(`  Network: http://192.168.3.77:${PORT}`);
-  await initDb();
+
+  const connected = await testConnection();
+  if (connected) {
+    await initDb();
+  } else {
+    console.error('Skipping DB initialization due to connection failure.');
+  }
 });
 
 // Prevent crash on unhandled errors

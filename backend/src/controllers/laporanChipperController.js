@@ -1,4 +1,4 @@
-const pool = require('../config/db');
+const { pool } = require('../config/db');
 
 // POST /api/laporan-chipper — simpan 1 dokumen sebagai single row
 const createLaporanChipper = async (req, res) => {

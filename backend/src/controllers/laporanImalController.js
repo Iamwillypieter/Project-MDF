@@ -1,4 +1,4 @@
-const pool = require('../config/db');
+const { pool } = require('../config/db');
 
 // POST /api/laporan-imal
 const createLaporanImal = async (req, res) => {

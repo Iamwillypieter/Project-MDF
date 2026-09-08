@@ -22,8 +22,8 @@ const createUser = async (req, res) => {
     return res.status(400).json({ message: 'Semua field wajib diisi' });
   }
 
-  if (!['produksi', 'sending'].includes(role)) {
-    return res.status(400).json({ message: 'Role hanya boleh produksi atau sending' });
+  if (!['produksi', 'sending', 'qc_lab'].includes(role)) {
+    return res.status(400).json({ message: 'Role hanya boleh produksi, sending, atau qc_lab' });
   }
 
   if (password.length < 6) {
@@ -81,8 +81,8 @@ const updateUser = async (req, res) => {
     return res.status(400).json({ message: 'Name, username, dan role wajib diisi' });
   }
 
-  if (!['produksi', 'sending'].includes(role)) {
-    return res.status(400).json({ message: 'Role hanya boleh produksi atau sending' });
+  if (!['produksi', 'sending', 'qc_lab'].includes(role)) {
+    return res.status(400).json({ message: 'Role hanya boleh produksi, sending, atau qc_lab' });
   }
 
   try {

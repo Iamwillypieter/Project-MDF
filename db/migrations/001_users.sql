@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS users (
   username   VARCHAR(50)  UNIQUE NOT NULL,
   password   VARCHAR(255) NOT NULL,                        -- bcrypt hash
   role       VARCHAR(20)  NOT NULL
-               CHECK (role IN ('admin', 'produksi', 'sending')),
+               CHECK (role IN ('admin', 'produksi', 'sending', 'qc_lab')),
   created_at TIMESTAMP    DEFAULT CURRENT_TIMESTAMP
 );
 

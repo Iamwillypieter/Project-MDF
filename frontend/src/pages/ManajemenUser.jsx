@@ -9,8 +9,8 @@ import './ManajemenUser.css';
 
 const API_URL = `http://${window.location.hostname}:5000/api`;
 
-const roleLabel = { produksi: 'Produksi', sending: 'Sending', admin: 'Admin' };
-const roleBadge = { produksi: 'badge-blue', sending: 'badge-green', admin: 'badge-purple' };
+const roleLabel = { produksi: 'Produksi', sending: 'Sending', qc_lab: 'QC Lab', admin: 'Admin' };
+const roleBadge = { produksi: 'badge-blue', sending: 'badge-green', qc_lab: 'badge-teal', admin: 'badge-purple' };
 
 // ─────────────────────────────────────────────────────────────
 // Komponen terisolasi: state isSubmitting hidup di sini,
@@ -108,6 +108,7 @@ const UserFormModal = ({ editTarget, token, onSuccess, onClose }) => {
             >
               <option value="produksi">Produksi</option>
               <option value="sending">Sending</option>
+              <option value="qc_lab">QC Lab</option>
             </select>
           </div>
 
@@ -227,6 +228,10 @@ const ManajemenUser = () => {
           <div className="stat-card">
             <span className="stat-number">{users.filter(u => u.role === 'sending').length}</span>
             <span className="stat-label">Sending</span>
+          </div>
+          <div className="stat-card">
+            <span className="stat-number">{users.filter(u => u.role === 'qc_lab').length}</span>
+            <span className="stat-label">QC Lab</span>
           </div>
         </div>
 

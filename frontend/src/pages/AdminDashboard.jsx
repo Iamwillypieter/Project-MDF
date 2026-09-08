@@ -31,14 +31,18 @@ const AdminDashboard = () => {
             </div>
           </Link>
 
-          {/* Card Sending — placeholder */}
-          <div className="card card-blue">
+          {/* Card Sending — navigasi ke history laporan sending */}
+          <Link
+            to="/sending/history-laporan"
+            className="card card-blue"
+            style={{ textDecoration: 'none' }}
+          >
             <div className="card-icon">📦</div>
             <div className="card-content">
               <h3>Data Sending</h3>
               <p>Pantau seluruh aktivitas pengiriman</p>
             </div>
-          </div>
+          </Link>
 
           {/* Card Manajemen User */}
           <div

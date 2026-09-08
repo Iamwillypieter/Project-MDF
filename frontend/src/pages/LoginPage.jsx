@@ -22,6 +22,7 @@ const LoginPage = () => {
       if (user.role === 'admin') navigate('/admin/dashboard');
       else if (user.role === 'produksi') navigate('/produksi/dashboard');
       else if (user.role === 'sending') navigate('/sending/dashboard');
+      else if (user.role === 'qc_lab') navigate('/qclab/dashboard');
     } catch (err) {
       const msg = err.response?.data?.message || 'Login gagal. Coba lagi.';
       const detail = err.response?.data?.detail ? ` (${err.response.data.detail})` : '';

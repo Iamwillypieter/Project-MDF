@@ -3,15 +3,17 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import './Navbar.css';
 
 const roleLabel = {
-  admin: 'Admin',
+  admin:    'Admin',
   produksi: 'Produksi',
-  sending: 'Sending',
+  sending:  'Sending',
+  qc_lab:   'QC Lab',
 };
 
 const dashboardPath = {
-  admin: '/admin/dashboard',
+  admin:    '/admin/dashboard',
   produksi: '/produksi/dashboard',
-  sending: '/sending/dashboard',
+  sending:  '/sending/dashboard',
+  qc_lab:   '/qclab/dashboard',
 };
 
 const Navbar = () => {

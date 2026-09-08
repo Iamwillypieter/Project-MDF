@@ -16,6 +16,15 @@ import LaporanCooling from './pages/LaporanCooling';
 import LaporanCoolingDetail from './pages/LaporanCoolingDetail';
 import LaporanImal from './pages/LaporanImal';
 import LaporanImalDetail from './pages/LaporanImalDetail';
+import LaporanSanding from './pages/LaporanSanding';
+import LaporanKertasPasir from './pages/LaporanKertasPasir';
+import HistorySanding from './pages/HistorySanding';
+import LaporanDailyTestSanding from './pages/LaporanDailyTestSanding';
+import QcLabDashboard from './pages/QcLabDashboard';
+import LaporanQcLab from './pages/LaporanQcLab';
+import LaporanQcLabShiftReport from './pages/LaporanQcLabShiftReport';
+import HistoryQcLab from './pages/HistoryQcLab';
+import QcLabShiftReportDetail from './pages/QcLabShiftReportDetail';
 
 function App() {
   return (
@@ -42,10 +51,10 @@ function App() {
             element={<ProtectedRoute allowedRoles={['produksi']}><ProduksiDashboard /></ProtectedRoute>}
           />
 
-          {/* History gabungan — semua role */}
+          {/* History produksi — produksi, admin, sending, qc_lab bisa lihat */}
           <Route path="/produksi/history-laporan"
             element={
-              <ProtectedRoute allowedRoles={['produksi', 'admin', 'sending']}>
+              <ProtectedRoute allowedRoles={['produksi', 'admin', 'sending', 'qc_lab']}>
                 <HistoryLaporan />
               </ProtectedRoute>
             }
@@ -111,9 +120,65 @@ function App() {
             }
           />
 
-          {/* ── Sending ───────────────────────────────────────── */}
+          {/* ── Sending (termasuk Sanding — role digabung) ────── */}
           <Route path="/sending/dashboard"
-            element={<ProtectedRoute allowedRoles={['sending']}><SendingDashboard /></ProtectedRoute>}
+            element={<ProtectedRoute allowedRoles={['sending', 'admin']}><SendingDashboard /></ProtectedRoute>}
+          />
+
+          {/* History laporan sending — qc_lab juga bisa read */}
+          <Route path="/sending/history-laporan"
+            element={<ProtectedRoute allowedRoles={['sending', 'admin', 'qc_lab']}><HistorySanding /></ProtectedRoute>}
+          />
+
+          {/* Laporan Hasil Sanding / Grading MDF */}
+          <Route path="/sending/laporan-hasil-sanding"
+            element={<ProtectedRoute allowedRoles={['sending', 'admin']}><LaporanSanding /></ProtectedRoute>}
+          />
+          <Route path="/sending/laporan-hasil-sanding/edit/:id"
+            element={<ProtectedRoute allowedRoles={['sending', 'admin']}><LaporanSanding /></ProtectedRoute>}
+          />
+
+          {/* Laporan Pemakaian Kertas Pasir */}
+          <Route path="/sending/laporan-kertas-pasir"
+            element={<ProtectedRoute allowedRoles={['sending', 'admin']}><LaporanKertasPasir /></ProtectedRoute>}
+          />
+          <Route path="/sending/laporan-kertas-pasir/edit/:id"
+            element={<ProtectedRoute allowedRoles={['sending', 'admin']}><LaporanKertasPasir /></ProtectedRoute>}
+          />
+
+          {/* Daily Test Report — Sanding Line MDF */}
+          <Route path="/sending/daily-test-report"
+            element={<ProtectedRoute allowedRoles={['sending', 'admin']}><LaporanDailyTestSanding /></ProtectedRoute>}
+          />
+          <Route path="/sending/daily-test-report/edit/:id"
+            element={<ProtectedRoute allowedRoles={['sending', 'admin']}><LaporanDailyTestSanding /></ProtectedRoute>}
+          />
+
+          {/* ── QC Lab ────────────────────────────────────────── */}
+          <Route path="/qclab/dashboard"
+            element={<ProtectedRoute allowedRoles={['qc_lab', 'admin']}><QcLabDashboard /></ProtectedRoute>}
+          />
+          <Route path="/qclab/laporan-kualitas"
+            element={<ProtectedRoute allowedRoles={['qc_lab', 'admin']}><LaporanQcLab /></ProtectedRoute>}
+          />
+          <Route path="/qclab/laporan-kualitas/edit/:id"
+            element={<ProtectedRoute allowedRoles={['qc_lab', 'admin']}><LaporanQcLab /></ProtectedRoute>}
+          />
+
+          {/* Quality Shift Report — In-Process Testing */}
+          <Route path="/qclab/quality-shift-report"
+            element={<ProtectedRoute allowedRoles={['qc_lab', 'admin']}><LaporanQcLabShiftReport /></ProtectedRoute>}
+          />
+          <Route path="/qclab/quality-shift-report/edit/:id"
+            element={<ProtectedRoute allowedRoles={['qc_lab', 'admin']}><LaporanQcLabShiftReport /></ProtectedRoute>}
+          />
+          <Route path="/qclab/quality-shift-report/detail/:id"
+            element={<ProtectedRoute allowedRoles={['qc_lab', 'admin']}><QcLabShiftReportDetail /></ProtectedRoute>}
+          />
+
+          {/* History QC Lab — semua laporan */}
+          <Route path="/qclab/history"
+            element={<ProtectedRoute allowedRoles={['qc_lab', 'admin']}><HistoryQcLab /></ProtectedRoute>}
           />
 
           {/* Catch all */}

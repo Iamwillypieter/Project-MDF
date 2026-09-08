@@ -2,12 +2,17 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 
-const authRoutes           = require('./routes/authRoutes');
-const userRoutes           = require('./routes/userRoutes');
-const laporanMdfRoutes     = require('./routes/laporanMdfRoutes');
-const laporanChipperRoutes = require('./routes/laporanChipperRoutes');
-const laporanCoolingRoutes = require('./routes/laporanCoolingRoutes');
-const laporanImalRoutes    = require('./routes/laporanImalRoutes');
+const authRoutes              = require('./routes/authRoutes');
+const userRoutes              = require('./routes/userRoutes');
+const laporanMdfRoutes        = require('./routes/laporanMdfRoutes');
+const laporanChipperRoutes    = require('./routes/laporanChipperRoutes');
+const laporanCoolingRoutes    = require('./routes/laporanCoolingRoutes');
+const laporanImalRoutes       = require('./routes/laporanImalRoutes');
+const laporanSandingRoutes    = require('./routes/laporanSandingRoutes');
+const laporanKertasPasirRoutes = require('./routes/laporanKertasPasirRoutes');
+const laporanQcLabRoutes      = require('./routes/laporanQcLabRoutes');
+const laporanQcLabShiftRoutes = require('./routes/laporanQcLabShiftRoutes');
+const laporanDailyTestRoutes  = require('./routes/laporanDailyTestRoutes');
 const { testConnection } = require('./config/db');
 const initDb = require('./config/initDb');
 
@@ -46,6 +51,11 @@ app.use('/api/laporan-mdf', laporanMdfRoutes);
 app.use('/api/laporan-chipper', laporanChipperRoutes);
 app.use('/api/laporan-cooling', laporanCoolingRoutes);
 app.use('/api/laporan-imal', laporanImalRoutes);
+app.use('/api/laporan-sanding', laporanSandingRoutes);
+app.use('/api/laporan-kertas-pasir', laporanKertasPasirRoutes);
+app.use('/api/laporan-qclab', laporanQcLabRoutes);
+app.use('/api/laporan-qclab-shift', laporanQcLabShiftRoutes);
+app.use('/api/laporan-daily-test',  laporanDailyTestRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

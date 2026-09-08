@@ -87,3 +87,8 @@
 .btn-logout:hover {
   background-color: #dc2626;
 }
+
+.role-qc_lab {
+  background-color: #0d9488;
+  color: white;
+}

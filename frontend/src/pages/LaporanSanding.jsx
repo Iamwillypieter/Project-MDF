@@ -13,13 +13,39 @@ const DRAFT_KEY = 'laporan_sanding_draft';
 const PANJANG = 1.22; // meter
 const LEBAR = 2.44;   // meter
 
+// Sortir Ulang: 4 kolom, tiap kolom: tebal (mm), grading (text), a, b, cr (angka)
+const defaultSortirUlang = () => [
+  { col: 1, tebal: '', grading: '', a: '', b: '', cr: '' },
+  { col: 2, tebal: '', grading: '', a: '', b: '', cr: '' },
+  { col: 3, tebal: '', grading: '', a: '', b: '', cr: '' },
+  { col: 4, tebal: '', grading: '', a: '', b: '', cr: '' },
+];
+
+// Jumlah per kolom = A + B + CR
+const calcSortirJumlah = (col) => {
+  const a  = parseFloat(col.a)  || 0;
+  const b  = parseFloat(col.b)  || 0;
+  const cr = parseFloat(col.cr) || 0;
+  const total = a + b + cr;
+  return total > 0 ? String(total) : '';
+};
+
+// Grand total seluruh kolom
+const calcSortirTotal = (cols) =>
+  cols.reduce((sum, col) => {
+    return sum
+      + (parseFloat(col.a)  || 0)
+      + (parseFloat(col.b)  || 0)
+      + (parseFloat(col.cr) || 0);
+  }, 0);
+
 const emptyHambatanRow = () => ({
   jam: '',
   hambatan: '',
 });
 
 const initialState = {
-  ukuran_tebal: '',     // mm
+  ukuran_tebal: '',
   tanggal_produksi: new Date().toISOString().split('T')[0],
   group: '',
   grading: {
@@ -28,6 +54,7 @@ const initialState = {
     CR: { pcs: '', m3: 0 },
     SU: { pcs: '', m3: 0 },
   },
+  sortir_ulang: defaultSortirUlang(),
   keterangan: '',
   hambatan: [],
 };
@@ -35,7 +62,13 @@ const initialState = {
 const readDraft = () => {
   try {
     const raw = localStorage.getItem(DRAFT_KEY);
-    return raw ? JSON.parse(raw) : null;
+    if (!raw) return null;
+    const p = JSON.parse(raw);
+    return {
+      ...initialState, ...p,
+      sortir_ulang: Array.isArray(p.sortir_ulang) ? p.sortir_ulang : defaultSortirUlang(),
+      hambatan:     Array.isArray(p.hambatan)     ? p.hambatan     : [],
+    };
   } catch {
     return null;
   }
@@ -83,12 +116,13 @@ const LaporanSanding = () => {
         });
         const d = res.data.laporan;
         setFormData({
-          ukuran_tebal: d.ukuran_tebal ?? '',
+          ukuran_tebal:     d.ukuran_tebal     ?? '',
           tanggal_produksi: d.tanggal_produksi ?? '',
-          group: d.group ?? '',
-          grading: d.grading ?? initialState.grading,
-          keterangan: d.keterangan ?? '',
-          hambatan: Array.isArray(d.hambatan) ? d.hambatan : [],
+          group:            d.group            ?? '',
+          grading:          d.grading          ?? initialState.grading,
+          sortir_ulang:     Array.isArray(d.sortir_ulang) ? d.sortir_ulang : defaultSortirUlang(),
+          keterangan:       d.keterangan       ?? '',
+          hambatan:         Array.isArray(d.hambatan) ? d.hambatan : [],
         });
       } catch (err) {
         setFetchError(err.response?.data?.message || 'Gagal memuat data laporan.');
@@ -155,6 +189,15 @@ const LaporanSanding = () => {
     }, 0).toFixed(4);
   };
 
+  // Sortir Ulang — update satu cell (colIdx, key)
+  const handleSortirChange = (colIdx, key, val) =>
+    setFormData(prev => ({
+      ...prev,
+      sortir_ulang: prev.sortir_ulang.map((c, i) =>
+        i === colIdx ? { ...c, [key]: val } : c
+      ),
+    }));
+
   // Hambatan handlers
   const handleHambatanChange = (rowIdx, key, value) => {
     setFormData(prev => ({
@@ -206,12 +249,13 @@ const LaporanSanding = () => {
     setIsSubmitting(true);
 
     const payload = {
-      ukuran_tebal: parseFloat(formData.ukuran_tebal),
+      ukuran_tebal:     parseFloat(formData.ukuran_tebal),
       tanggal_produksi: formData.tanggal_produksi,
-      group: formData.group,
-      grading: formData.grading,
-      keterangan: formData.keterangan || '',
-      hambatan: formData.hambatan,
+      group:            formData.group,
+      grading:          formData.grading,
+      sortir_ulang:     formData.sortir_ulang,
+      keterangan:       formData.keterangan || '',
+      hambatan:         formData.hambatan,
     };
 
     try {
@@ -438,6 +482,117 @@ const LaporanSanding = () => {
             <p className="text-xs text-slate-500 mt-3 italic">
               * Rumus: M³ = Pcs × 1.22 × 2.44 × (Tebal / 1000)
             </p>
+          </div>
+
+          {/* Sortir Ulang */}
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-5">
+            <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">
+              Sortir Ulang
+            </h2>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-sm min-w-[480px]">
+                <thead>
+                  <tr className="bg-slate-50 border-b-2 border-slate-200">
+                    <th className="text-left py-2.5 px-3 text-xs font-semibold text-slate-700 w-28">
+                      Kategori
+                    </th>
+                    {formData.sortir_ulang.map((_, ci) => (
+                      <th key={ci} className="text-center py-2.5 px-3 text-xs font-semibold text-slate-700">
+                        Kolom {ci + 1}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+
+                  {/* Tebal (mm) */}
+                  <tr className="border-b border-slate-100 bg-slate-50/40">
+                    <td className="py-2 px-3 text-xs font-semibold text-slate-600">Tebal (mm)</td>
+                    {formData.sortir_ulang.map((col, ci) => (
+                      <td key={ci} className="py-1.5 px-2">
+                        <input
+                          type="number" step="any" value={col.tebal}
+                          onChange={e => handleSortirChange(ci, 'tebal', e.target.value)}
+                          disabled={isSubmitting}
+                          placeholder="0"
+                          className="w-full px-2 py-1.5 border border-slate-300 rounded text-sm text-right
+                                     focus:ring-1 focus:ring-blue-500 focus:border-blue-500
+                                     disabled:bg-slate-50 disabled:text-slate-400"
+                        />
+                      </td>
+                    ))}
+                  </tr>
+
+                  {/* Grading */}
+                  <tr className="border-b border-slate-100 bg-slate-50/40">
+                    <td className="py-2 px-3 text-xs font-semibold text-slate-600">Grading</td>
+                    {formData.sortir_ulang.map((col, ci) => (
+                      <td key={ci} className="py-1.5 px-2">
+                        <input
+                          type="text" value={col.grading}
+                          onChange={e => handleSortirChange(ci, 'grading', e.target.value)}
+                          disabled={isSubmitting}
+                          placeholder="..."
+                          className="w-full px-2 py-1.5 border border-slate-300 rounded text-sm
+                                     focus:ring-1 focus:ring-blue-500 focus:border-blue-500
+                                     disabled:bg-slate-50 disabled:text-slate-400"
+                        />
+                      </td>
+                    ))}
+                  </tr>
+
+                  {/* A, B, CR */}
+                  {[
+                    { key: 'a',  label: 'A'  },
+                    { key: 'b',  label: 'B'  },
+                    { key: 'cr', label: 'CR' },
+                  ].map(({ key, label }) => (
+                    <tr key={key} className="border-b border-slate-100 hover:bg-slate-50">
+                      <td className="py-2 px-3 text-xs font-semibold text-slate-700">{label}</td>
+                      {formData.sortir_ulang.map((col, ci) => (
+                        <td key={ci} className="py-1.5 px-2">
+                          <input
+                            type="number" step="1" min="0" value={col[key]}
+                            onChange={e => handleSortirChange(ci, key, e.target.value)}
+                            disabled={isSubmitting}
+                            placeholder="0"
+                            className="w-full px-2 py-1.5 border border-slate-300 rounded text-sm text-right
+                                       focus:ring-1 focus:ring-blue-500 focus:border-blue-500
+                                       disabled:bg-slate-50 disabled:text-slate-400"
+                          />
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+
+                  {/* Jumlah per kolom — auto */}
+                  <tr className="border-b border-blue-200 bg-blue-50/50">
+                    <td className="py-2 px-3 text-xs font-semibold text-blue-800">Jumlah</td>
+                    {formData.sortir_ulang.map((col, ci) => (
+                      <td key={ci} className="py-2 px-3 text-center">
+                        <span className="font-mono font-semibold text-sm text-blue-800">
+                          {calcSortirJumlah(col) || <span className="text-slate-300">—</span>}
+                        </span>
+                      </td>
+                    ))}
+                  </tr>
+
+                  {/* Total grand — auto */}
+                  <tr className="bg-blue-50 border-t-2 border-blue-200">
+                    <td className="py-2.5 px-3 text-xs font-bold text-blue-800">Total</td>
+                    <td colSpan={formData.sortir_ulang.length} className="py-2.5 px-3 text-center">
+                      {(() => {
+                        const t = calcSortirTotal(formData.sortir_ulang);
+                        return t > 0
+                          ? <span className="font-mono font-bold text-base text-blue-800">{t}</span>
+                          : <span className="text-slate-400 font-normal">—</span>;
+                      })()}
+                    </td>
+                  </tr>
+
+                </tbody>
+              </table>
+            </div>
           </div>
 
           {/* Keterangan */}

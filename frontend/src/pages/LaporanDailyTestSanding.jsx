@@ -29,13 +29,7 @@ const emptySwellingRow = (no) => ({
   absorption_pct: '', swelling_pct: '',
 });
 
-// Sortir Ulang: 4 kolom, tiap kolom: tebal (mm), grading (text), a, b, cr (angka)
-const defaultSortirUlang = () => [
-  { col: 1, tebal: '', grading: '', a: '', b: '', cr: '' },
-  { col: 2, tebal: '', grading: '', a: '', b: '', cr: '' },
-  { col: 3, tebal: '', grading: '', a: '', b: '', cr: '' },
-  { col: 4, tebal: '', grading: '', a: '', b: '', cr: '' },
-];
+// Sortir Ulang sudah dipindahkan ke LaporanSanding.jsx
 
 const make5 = (factory) => Array.from({ length: 5 }, (_, i) => factory(i + 1));
 
@@ -51,7 +45,6 @@ const initialState = {
   physical_test:   make5(emptyPhysicalRow),
   board_mc:        make5(emptyBoardMcRow),
   swelling:        make5(emptySwellingRow),
-  sortir_ulang:    defaultSortirUlang(),
   remarks:         '',
 };
 
@@ -68,7 +61,6 @@ const readDraft = () => {
       physical_test: Array.isArray(p.physical_test)  ? p.physical_test  : make5(emptyPhysicalRow),
       board_mc:      Array.isArray(p.board_mc)       ? p.board_mc       : make5(emptyBoardMcRow),
       swelling:      Array.isArray(p.swelling)       ? p.swelling       : make5(emptySwellingRow),
-      sortir_ulang:  Array.isArray(p.sortir_ulang)   ? p.sortir_ulang   : defaultSortirUlang(),
     };
   } catch { return null; }
 };
@@ -90,26 +82,6 @@ const safeMin = (arr, key, dec = 2) => {
   const v = numVals(arr, key);
   return v.length ? Math.min(...v).toFixed(dec) : '';
 };
-
-// ── Sortir Ulang calculations ─────────────────────────────────────────────────
-
-// Jumlah per kolom = A + B + CR (aman zero-value: kembalikan '' jika semua 0/kosong)
-const calcSortirJumlah = (col) => {
-  const a  = parseFloat(col.a)  || 0;
-  const b  = parseFloat(col.b)  || 0;
-  const cr = parseFloat(col.cr) || 0;
-  const total = a + b + cr;
-  return total > 0 ? String(total) : '';
-};
-
-// Grand total seluruh kolom
-const calcSortirTotal = (cols) =>
-  cols.reduce((sum, col) => {
-    return sum
-      + (parseFloat(col.a)  || 0)
-      + (parseFloat(col.b)  || 0)
-      + (parseFloat(col.cr) || 0);
-  }, 0);
 
 // ── Auto-calculations ─────────────────────────────────────────────────────────
 
@@ -239,7 +211,6 @@ const LaporanDailyTestSanding = () => {
           physical_test:   Array.isArray(d.physical_test)  ? d.physical_test  : make5(emptyPhysicalRow),
           board_mc:        Array.isArray(d.board_mc)       ? d.board_mc       : make5(emptyBoardMcRow),
           swelling:        Array.isArray(d.swelling)       ? d.swelling       : make5(emptySwellingRow),
-          sortir_ulang:    Array.isArray(d.sortir_ulang)   ? d.sortir_ulang   : defaultSortirUlang(),
           remarks:         d.remarks ?? '',
         });
       } catch (err) {
@@ -311,15 +282,6 @@ const LaporanDailyTestSanding = () => {
       }),
     }));
 
-  // Sortir Ulang — update satu cell (colIdx, key)
-  const handleSortirChange = (colIdx, key, val) =>
-    setFormData(prev => ({
-      ...prev,
-      sortir_ulang: prev.sortir_ulang.map((c, i) =>
-        i === colIdx ? { ...c, [key]: val } : c
-      ),
-    }));
-
   // ── Reset ─────────────────────────────────────────────────────────────────
 
   const handleReset = () => {
@@ -346,7 +308,6 @@ const LaporanDailyTestSanding = () => {
     }
 
     setIsSubmitting(true);
-    // Payload lengkap — sortir_ulang ikut serta
     const payload = { ...formData };
 
     try {
@@ -619,110 +580,9 @@ const LaporanDailyTestSanding = () => {
             </div>
           </div>
 
-          {/* ── F. Sortir Ulang ── */}
+          {/* ── F. Remarks ── */}
           <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-5">
-            <SectionLabel letter="F" title="Sortir Ulang" />
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse text-sm min-w-[480px]">
-                <thead>
-                  <tr className="bg-purple-50 border-b-2 border-purple-200">
-                    <th className="text-left py-2.5 px-3 text-xs font-semibold text-purple-800 w-28">
-                      Kategori
-                    </th>
-                    {formData.sortir_ulang.map((_, ci) => (
-                      <th key={ci} className={thCls}>Kolom {ci + 1}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-
-                  {/* Baris Tebal (mm) */}
-                  <tr className="border-b border-slate-100 bg-slate-50/40">
-                    <td className="py-2 px-3 text-xs font-semibold text-slate-600">Tebal (mm)</td>
-                    {formData.sortir_ulang.map((col, ci) => (
-                      <td key={ci} className="py-1.5 px-1">
-                        <input
-                          type="number" step="any" value={col.tebal}
-                          onChange={e => handleSortirChange(ci, 'tebal', e.target.value)}
-                          disabled={isSubmitting}
-                          className={numCls}
-                        />
-                      </td>
-                    ))}
-                  </tr>
-
-                  {/* Baris Grading */}
-                  <tr className="border-b border-slate-100 bg-slate-50/40">
-                    <td className="py-2 px-3 text-xs font-semibold text-slate-600">Grading</td>
-                    {formData.sortir_ulang.map((col, ci) => (
-                      <td key={ci} className="py-1.5 px-1">
-                        <input
-                          type="text" value={col.grading}
-                          onChange={e => handleSortirChange(ci, 'grading', e.target.value)}
-                          disabled={isSubmitting}
-                          className={textCls}
-                        />
-                      </td>
-                    ))}
-                  </tr>
-
-                  {/* Baris A, B, CR */}
-                  {[
-                    { key: 'a',  label: 'A'  },
-                    { key: 'b',  label: 'B'  },
-                    { key: 'cr', label: 'CR' },
-                  ].map(({ key, label }) => (
-                    <tr key={key} className="border-b border-slate-100 hover:bg-slate-50">
-                      <td className="py-2 px-3 text-xs font-semibold text-slate-700">{label}</td>
-                      {formData.sortir_ulang.map((col, ci) => (
-                        <td key={ci} className="py-1.5 px-1">
-                          <input
-                            type="number" step="1" min="0" value={col[key]}
-                            onChange={e => handleSortirChange(ci, key, e.target.value)}
-                            disabled={isSubmitting}
-                            className={numCls}
-                          />
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-
-                  {/* Baris Jumlah per kolom — auto (A + B + CR) */}
-                  <tr className="border-b border-purple-200 bg-purple-50/60">
-                    <td className="py-2 px-3 text-xs font-semibold text-purple-800">Jumlah</td>
-                    {formData.sortir_ulang.map((col, ci) => (
-                      <td key={ci} className="py-2 px-2 text-center">
-                        <span className="font-mono font-semibold text-sm text-purple-800">
-                          {calcSortirJumlah(col) || <span className="text-purple-300">—</span>}
-                        </span>
-                      </td>
-                    ))}
-                  </tr>
-
-                  {/* Baris Total grand — auto */}
-                  <tr className="bg-purple-50 border-t-2 border-purple-200">
-                    <td className="py-2.5 px-3 text-xs font-bold text-purple-800">Total</td>
-                    <td
-                      colSpan={formData.sortir_ulang.length}
-                      className="py-2.5 px-3 text-center"
-                    >
-                      {(() => {
-                        const t = calcSortirTotal(formData.sortir_ulang);
-                        return t > 0
-                          ? <span className="font-mono font-bold text-base text-purple-800">{t}</span>
-                          : <span className="text-purple-300 font-normal">—</span>;
-                      })()}
-                    </td>
-                  </tr>
-
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* ── G. Remarks ── */}
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-5">
-            <SectionLabel letter="G" title="Remarks" />
+            <SectionLabel letter="F" title="Remarks" />
             <textarea
               value={formData.remarks}
               onChange={e => setField('remarks', e.target.value)}

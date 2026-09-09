@@ -30,10 +30,18 @@ const emptyTransaksiRow = () => ({
   },
 });
 
+const defaultStokAkhir = () => ({
+  gr_50:  '',
+  gr_60:  '',
+  gr_100: '',
+  gr_150: '',
+});
+
 const initialState = {
-  tanggal: new Date().toISOString().split('T')[0],
-  transaksi: [],
-  keterangan: '',
+  tanggal:     new Date().toISOString().split('T')[0],
+  transaksi:   [],
+  stok_akhir:  defaultStokAkhir(),
+  keterangan:  '',
 };
 
 const readDraft = () => {
@@ -87,8 +95,11 @@ const LaporanKertasPasir = () => {
         });
         const d = res.data.laporan;
         setFormData({
-          tanggal: d.tanggal ?? '',
-          transaksi: Array.isArray(d.transaksi) ? d.transaksi : [],
+          tanggal:    d.tanggal    ?? '',
+          transaksi:  Array.isArray(d.transaksi) ? d.transaksi : [],
+          stok_akhir: (d.stok_akhir && typeof d.stok_akhir === 'object')
+            ? { ...defaultStokAkhir(), ...d.stok_akhir }
+            : defaultStokAkhir(),
           keterangan: d.keterangan ?? '',
         });
       } catch (err) {
@@ -160,8 +171,9 @@ const LaporanKertasPasir = () => {
     setIsSubmitting(true);
 
     const payload = {
-      tanggal: formData.tanggal,
-      transaksi: formData.transaksi,
+      tanggal:    formData.tanggal,
+      transaksi:  formData.transaksi,
+      stok_akhir: formData.stok_akhir,
       keterangan: formData.keterangan || '',
     };
 
@@ -506,6 +518,50 @@ const LaporanKertasPasir = () => {
             <p className="text-xs text-slate-500 mt-3 italic">
               * Setiap transaksi memiliki 2 baris: Posisi A (Atas) dan Posisi B (Bawah)
             </p>
+          </div>
+
+          {/* Stok Akhir Kertas Pasir */}
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-5">
+            <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">
+              Stok Akhir Kertas Pasir
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {[
+                { key: 'gr_50',  label: 'Gr: 50'  },
+                { key: 'gr_60',  label: 'Gr: 60'  },
+                { key: 'gr_100', label: 'Gr: 100' },
+                { key: 'gr_150', label: 'Gr: 150' },
+              ].map(({ key, label }) => (
+                <div key={key}>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    {label}
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      step="1"
+                      min="0"
+                      value={formData?.stok_akhir?.[key] ?? ''}
+                      onChange={e =>
+                        setFormData(prev => ({
+                          ...prev,
+                          stok_akhir: { ...prev.stok_akhir, [key]: e.target.value },
+                        }))
+                      }
+                      disabled={isSubmitting}
+                      placeholder="0"
+                      className="w-full px-3 py-2 pr-12 border border-slate-300 rounded-lg text-sm
+                                 text-right focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+                                 disabled:bg-slate-50"
+                    />
+                    <span className="absolute inset-y-0 right-3 flex items-center text-xs
+                                     font-medium text-slate-400 pointer-events-none">
+                      pcs
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Keterangan */}

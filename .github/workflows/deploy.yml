@@ -1,0 +1,58 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  deploy:
+    name: SSH Deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      # ── 1. Checkout (hanya untuk referensi, deploy dilakukan via SSH) ──────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── 2. Deploy via SSH ──────────────────────────────────────────────────
+      - name: Deploy to server via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host:     ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key:      ${{ secrets.SSH_PRIVATE_KEY }}
+          port:     ${{ secrets.SSH_PORT }}
+          # Timeout koneksi SSH (detik)
+          connect_timeout: 30s
+          script: |
+            set -e   # Hentikan script jika ada perintah yang gagal
+
+            echo "==> Masuk ke direktori project..."
+            cd ${{ secrets.APP_DIR }}
+
+            echo "==> Pull kode terbaru dari branch main..."
+            git pull origin main
+
+            # ── Backend ──────────────────────────────────────────────────────
+            echo "==> Install dependensi backend..."
+            cd backend
+            npm install --production=false
+            cd ..
+
+            # ── Frontend ─────────────────────────────────────────────────────
+            echo "==> Install dependensi frontend..."
+            cd frontend
+            npm install --production=false
+
+            echo "==> Build frontend (Vite)..."
+            npm run build
+            cd ..
+
+            # ── PM2 Reload (zero-downtime) ───────────────────────────────────
+            echo "==> Reload aplikasi via PM2..."
+            pm2 reload ecosystem.config.js --update-env
+
+            echo "==> Deploy selesai!"

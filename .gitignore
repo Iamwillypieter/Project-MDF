@@ -2,7 +2,10 @@
 node_modules/
 
 # ── Environment variables (JANGAN diupload — berisi kredensial) ──
+.env
 backend/.env
+frontend/.env
+*.env.local
 
 # ── Build output ──────────────────────────────────────────────
 frontend/dist/
@@ -11,6 +14,8 @@ frontend/.vite/
 # ── Logs ──────────────────────────────────────────────────────
 *.log
 npm-debug.log*
+logs/
+backend/logs/
 
 # ── OS files ──────────────────────────────────────────────────
 .DS_Store

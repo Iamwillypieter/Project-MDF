@@ -33,8 +33,8 @@ jobs:
             echo "==> Masuk ke direktori project..."
             cd ${{ secrets.APP_DIR }}
 
-            echo "==> Pull kode terbaru dari branch main..."
-            git pull origin main
+            echo "==> Pull kode terbaru dari branch master..."
+            git pull origin master
 
             # ── Backend ──────────────────────────────────────────────────────
             echo "==> Install dependensi backend..."

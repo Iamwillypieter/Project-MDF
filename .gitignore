@@ -20,3 +20,10 @@ backend/logs/
 # ── OS files ──────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
+
+# ── PM2 ───────────────────────────────────────────────────────
+.pm2/
+
+# ── Setup/deploy output logs ──────────────────────────────────
+scripts/*.log
+setup-output.txt

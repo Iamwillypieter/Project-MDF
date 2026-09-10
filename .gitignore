@@ -8,7 +8,7 @@ frontend/.env
 *.env.local
 
 # ── Build output ──────────────────────────────────────────────
-frontend/dist/
+# frontend/dist/ → TIDAK di-ignore agar server Windows 7 bisa git pull langsung
 frontend/.vite/
 
 # ── Logs ──────────────────────────────────────────────────────

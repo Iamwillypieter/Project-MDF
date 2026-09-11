@@ -138,25 +138,35 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', env: process.env.NODE_ENV });
 });
 
-// ── 8. Static Files SPA (Production Only) ────────────────────────────────────
+// ── 8. Static Files SPA ───────────────────────────────────────────────────────
 // Serve hasil build Vite (frontend/dist) dan fallback ke index.html
 // agar React Router tidak 404 saat halaman di-refresh.
-if (isProd) {
-  const distPath = path.join(__dirname, '..', '..', 'frontend', 'dist');
+const fs       = require('fs');
+const distPath = path.resolve(__dirname, '..', '..', 'frontend', 'dist');
+const indexHtml = path.join(distPath, 'index.html');
 
+if (fs.existsSync(indexHtml)) {
+  // Serve static assets (JS, CSS, images)
   app.use(
     express.static(distPath, {
-      maxAge: '7d',      // cache asset statis browser 7 hari
+      maxAge: isProd ? '7d' : '0',
       etag: true,
       lastModified: true,
     })
   );
 
-  // Fallback SPA – semua route non-API dikembalikan index.html
-  app.get('*', (req, res, next) => {
-    // Pastikan tidak menimpa route /api/*
+  // Fallback SPA – refresh di /dashboard, /produksi/laporan-mdf, dll tidak 404
+  app.get('*', function(req, res, next) {
     if (req.path.startsWith('/api/')) return next();
-    res.sendFile(path.join(distPath, 'index.html'));
+    res.sendFile(indexHtml);
+  });
+} else {
+  // Folder dist belum ada
+  app.get('*', function(req, res, next) {
+    if (req.path.startsWith('/api/')) return next();
+    res.status(503).send(
+      '<h2>Frontend belum di-build.</h2><p>Jalankan <code>npm run build</code> di folder frontend.</p>'
+    );
   });
 }
 

@@ -125,3 +125,32 @@
   color: #94a3b8;
   cursor: not-allowed;
 }
+
+/* Alert warning (auto-logout notification) */
+.alert-warning {
+  background-color: #fffbeb;
+  border: 1px solid #fcd34d;
+  color: #92400e;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.alert-close {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: #92400e;
+  padding: 0 4px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.alert-close:hover {
+  color: #78350f;
+}

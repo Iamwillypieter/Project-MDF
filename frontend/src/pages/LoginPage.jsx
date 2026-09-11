@@ -1,34 +1,71 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+/**
+ * LoginPage – Login dengan loading state, cegah double submit,
+ * redirect otomatis jika sudah login, dan tampilkan pesan auto-logout.
+ */
+
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Spinner from '../components/ui/Spinner';
+import LoadingState from '../components/ui/LoadingState';
 import './LoginPage.css';
 
-const LoginPage = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
-  const navigate = useNavigate();
+const dashboardPath = {
+  admin:    '/admin/dashboard',
+  produksi: '/produksi/dashboard',
+  sending:  '/sending/dashboard',
+  qc_lab:   '/qclab/dashboard',
+};
 
+const LoginPage = () => {
+  const [username,    setUsername]    = useState('');
+  const [password,    setPassword]    = useState('');
+  const [error,       setError]       = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { login, user, loading, sessionMessage, setSessionMessage } = useAuth();
+  const navigate  = useNavigate();
+  const location  = useLocation();
+
+  // ── Redirect otomatis kalau sudah login ─────────────────────────────────
+  useEffect(() => {
+    if (!loading && user) {
+      const dest = dashboardPath[user.role] || '/';
+      navigate(dest, { replace: true });
+    }
+  }, [loading, user, navigate]);
+
+  // ── Tampilkan pesan auto-logout dari state (lalu bersihkan) ─────────────
+  useEffect(() => {
+    if (location.state?.sessionExpired || sessionMessage) {
+      // pesan sudah di sessionMessage dari AuthContext
+      // bersihkan location.state agar tidak muncul lagi setelah refresh
+      window.history.replaceState({}, '');
+    }
+  }, [location.state, sessionMessage]);
+
+  // ── Saat masih cek session awal, tampilkan loading ──────────────────────
+  if (loading) {
+    return <LoadingState fullPage message="Memuat sesi..." />;
+  }
+
+  // ── Submit login ─────────────────────────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return; // cegah double submit
     setError('');
-    setIsLoading(true); // set true sebelum hit API
+    setSessionMessage('');
+    setIsSubmitting(true);
 
     try {
-      const user = await login(username, password);
-      if (user.role === 'admin') navigate('/admin/dashboard');
-      else if (user.role === 'produksi') navigate('/produksi/dashboard');
-      else if (user.role === 'sending') navigate('/sending/dashboard');
-      else if (user.role === 'qc_lab') navigate('/qclab/dashboard');
+      const usr = await login(username, password);
+      navigate(dashboardPath[usr.role] || '/', { replace: true });
     } catch (err) {
-      const msg = err.response?.data?.message || 'Login gagal. Coba lagi.';
-      const detail = err.response?.data?.detail ? ` (${err.response.data.detail})` : '';
+      const msg    = err.response?.data?.message || 'Login gagal. Coba lagi.';
+      const detail = err.response?.data?.detail  ? ` (${err.response.data.detail})` : '';
       setError(msg + detail);
     } finally {
-      setIsLoading(false); // wajib di finally — berhenti baik sukses maupun error
+      setIsSubmitting(false);
     }
   };
 
@@ -40,8 +77,24 @@ const LoginPage = () => {
           <p>Silakan login untuk melanjutkan</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="login-form">
-          {error && <div className="alert-error">{error}</div>}
+        {/* Notifikasi auto-logout */}
+        {sessionMessage && (
+          <div className="alert-warning" role="alert">
+            <span>⚠️ {sessionMessage}</span>
+            <button
+              className="alert-close"
+              onClick={() => setSessionMessage('')}
+              aria-label="Tutup notifikasi"
+            >
+              ×
+            </button>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="login-form" noValidate>
+          {error && (
+            <div className="alert-error" role="alert">{error}</div>
+          )}
 
           <div className="form-group">
             <label htmlFor="username">Username</label>
@@ -53,7 +106,8 @@ const LoginPage = () => {
               placeholder="Masukkan username"
               required
               autoFocus
-              disabled={isLoading}
+              autoComplete="username"
+              disabled={isSubmitting}
             />
           </div>
 
@@ -66,15 +120,20 @@ const LoginPage = () => {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Masukkan password"
               required
-              disabled={isLoading}
+              autoComplete="current-password"
+              disabled={isSubmitting}
             />
           </div>
 
-          <button type="submit" className="btn-login" disabled={isLoading}>
-            {isLoading ? (
+          <button
+            type="submit"
+            className="btn-login"
+            disabled={isSubmitting || !username.trim() || !password.trim()}
+          >
+            {isSubmitting ? (
               <span className="btn-spinner-wrapper">
                 <Spinner size="sm" className="text-white" />
-                Memproses...
+                Masuk...
               </span>
             ) : (
               'Login'

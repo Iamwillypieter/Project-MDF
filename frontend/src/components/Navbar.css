@@ -92,3 +92,14 @@
   background-color: #0d9488;
   color: white;
 }
+
+.btn-logout:disabled {
+  opacity: 0.75;
+  cursor: not-allowed;
+}
+
+.btn-logout-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}

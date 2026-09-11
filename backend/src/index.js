@@ -81,12 +81,8 @@ const allowedOrigins = buildAllowedOrigins();
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Izinkan request tanpa origin (server-to-server, Postman di dev)
-      if (!origin) {
-        if (!isProd) return callback(null, true);
-        // Di production, request tanpa origin tetap diblokir untuk keamanan
-        return callback(new Error('CORS: request tanpa origin diblokir di production'));
-      }
+      // Izinkan request tanpa origin (browser same-origin, Postman, dll)
+      if (!origin) return callback(null, true);
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       }

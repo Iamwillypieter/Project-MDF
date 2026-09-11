@@ -34,23 +34,9 @@ app.use(
   helmet({
     // Nonaktifkan HSTS karena server tidak pakai HTTPS
     strictTransportSecurity: false,
-    // Content-Security-Policy: sesuaikan jika ada CDN/font eksternal
-    contentSecurityPolicy: isProd
-      ? {
-          directives: {
-            defaultSrc:  ["'self'"],
-            scriptSrc:   ["'self'"],
-            styleSrc:    ["'self'", "'unsafe-inline'"], // Tailwind inline style
-            imgSrc:      ["'self'", 'data:'],
-            connectSrc:  ["'self'"],
-            fontSrc:     ["'self'"],
-            objectSrc:   ["'none'"],
-            frameSrc:    ["'none'"],
-            upgradeInsecureRequests: isProd ? [] : null,
-          },
-        }
-      : false, // Nonaktifkan CSP di dev agar HMR Vite tidak terganggu
-    crossOriginEmbedderPolicy: false, // Bisa menyebabkan masalah dengan asset embed
+    // Nonaktifkan CSP karena tidak pakai HTTPS
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false,
   })
 );
 

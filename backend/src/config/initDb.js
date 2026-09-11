@@ -1,4 +1,5 @@
 const { pool } = require('./db');
+const bcrypt = require('bcryptjs');
 
 const initDb = async () => {
   try {
@@ -263,8 +264,6 @@ const initDb = async () => {
     `);
 
     // Insert default users if not exist
-    const bcrypt = require('bcryptjs');
-
     const defaultUsers = [
       { name: 'Administrator',  username: 'admin',    password: 'admin123',    role: 'admin' },
       { name: 'Staff Produksi', username: 'produksi', password: 'produksi123', role: 'produksi' },

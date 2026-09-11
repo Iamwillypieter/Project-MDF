@@ -4,7 +4,7 @@ const { pool } = require('../config/db');
 const parseJsonb = (val, fallback) => {
   if (val === null || val === undefined) return fallback;
   if (typeof val === 'object') return val; // pg driver sudah parse JSONB
-  try { return JSON.parse(val); } catch { return fallback; }
+  try { return JSON.parse(val); } catch (e) { return fallback; }
 };
 
 // ── POST /api/laporan-qclab-shift ─────────────────────────────────────────────

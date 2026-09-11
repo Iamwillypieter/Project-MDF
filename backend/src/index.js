@@ -32,6 +32,8 @@ const isProd = process.env.NODE_ENV === 'production';
 // Helmet otomatis menyembunyikan X-Powered-By dan mengatur banyak header keamanan.
 app.use(
   helmet({
+    // Nonaktifkan HSTS karena server tidak pakai HTTPS
+    strictTransportSecurity: false,
     // Content-Security-Policy: sesuaikan jika ada CDN/font eksternal
     contentSecurityPolicy: isProd
       ? {

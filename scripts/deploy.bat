@@ -4,8 +4,7 @@
 ::  Jalankan setiap kali ada kode baru yang sudah di-push ke GitHub.
 ::
 ::  Cara pakai:
-::    1. Klik kanan file ini → "Run as administrator"
-::    2. Tunggu sampai selesai, aplikasi otomatis restart
+::    Klik dua kali file ini atau jalankan di Command Prompt
 :: ============================================================================
 
 title Deploy MDF - Update Aplikasi
@@ -19,14 +18,6 @@ echo   %date% %time%
 echo  ============================================================
 echo.
 
-:: ── Cek Administrator ────────────────────────────────────────────────────────
-net session >nul 2>&1
-if %errorLevel% NEQ 0 (
-    echo  [ERROR] Harus dijalankan sebagai Administrator!
-    pause
-    exit /b 1
-)
-
 :: ── Tentukan direktori project ───────────────────────────────────────────────
 set PROJECT_DIR=%~dp0..
 if "%PROJECT_DIR:~-1%"=="\" set PROJECT_DIR=%PROJECT_DIR:~0,-1%
@@ -34,14 +25,9 @@ cd /d "%PROJECT_DIR%"
 
 :: ── Step 1: Pull kode terbaru ─────────────────────────────────────────────────
 echo  [1/4] Mengambil kode terbaru dari GitHub...
-git pull origin main
+git pull origin master
 if %errorLevel% NEQ 0 (
-    echo.
     echo  [ERROR] Gagal git pull!
-    echo  Kemungkinan penyebab:
-    echo    - Tidak ada koneksi internet
-    echo    - Ada konflik file lokal (jalankan: git status)
-    echo.
     pause
     exit /b 1
 )
@@ -59,9 +45,9 @@ if %errorLevel% NEQ 0 (
 )
 echo  [OK] Backend dependencies updated.
 
-:: ── Step 3: Install/update dan build frontend ────────────────────────────────
+:: ── Step 3: Build frontend ───────────────────────────────────────────────────
 echo.
-echo  [3/4] Update dan build frontend...
+echo  [3/4] Build frontend...
 cd /d "%PROJECT_DIR%\frontend"
 call npm install
 if %errorLevel% NEQ 0 (
@@ -75,17 +61,18 @@ if %errorLevel% NEQ 0 (
     pause
     exit /b 1
 )
-echo  [OK] Frontend berhasil di-build.
+
+:: Commit hasil build ke GitHub agar selalu up-to-date
+cd /d "%PROJECT_DIR%"
+git add -f frontend/dist/
+git commit -m "build: update frontend dist [auto]" 2>nul
+git push origin master 2>nul
 
 :: ── Step 4: Restart aplikasi ─────────────────────────────────────────────────
 echo.
 echo  [4/4] Restart aplikasi via PM2...
 cd /d "%PROJECT_DIR%"
-call pm2 restart ecosystem.config.js --update-env
-if %errorLevel% NEQ 0 (
-    echo  [WARN] pm2 restart gagal, mencoba pm2 start...
-    call pm2 start ecosystem.config.js --env production
-)
+call pm2 restart mdf-backend --update-env
 call pm2 save
 echo  [OK] Aplikasi berhasil direstart.
 
@@ -95,9 +82,8 @@ echo  ============================================================
 echo   DEPLOY SELESAI! %date% %time%
 echo  ============================================================
 echo.
-echo  Status aplikasi saat ini:
-call pm2 status
+echo  Aplikasi berjalan di: http://192.168.3.77:5000
 echo.
-echo  Aplikasi berjalan di: http://localhost:5000
+call pm2 status
 echo.
 pause

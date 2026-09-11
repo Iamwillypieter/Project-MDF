@@ -107,8 +107,6 @@ app.use(express.urlencoded({ extended: true, limit: '2mb' }));
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 menit
   max: 300,                  // maks 300 request per IP per window
-  standardHeaders: 'draft-7',
-  legacyHeaders: false,
   message: { message: 'Terlalu banyak permintaan, coba lagi nanti.' },
 });
 app.use('/api', globalLimiter);
@@ -117,10 +115,8 @@ app.use('/api', globalLimiter);
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 menit
   max: 20,                   // maks 20 percobaan login per IP per 15 menit
-  standardHeaders: 'draft-7',
-  legacyHeaders: false,
   message: { message: 'Terlalu banyak percobaan login. Silakan tunggu 15 menit.' },
-  skipSuccessfulRequests: true, // Hanya hitung request yang gagal (status >= 400)
+  skipSuccessfulRequests: true,
 });
 app.use('/api/auth/login', authLimiter);
 
@@ -128,8 +124,6 @@ app.use('/api/auth/login', authLimiter);
 const submitLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 menit
   max: 30,                  // maks 30 submit per IP per menit
-  standardHeaders: 'draft-7',
-  legacyHeaders: false,
   message: { message: 'Terlalu banyak pengiriman data. Coba lagi dalam 1 menit.' },
 });
 app.use('/api/laporan-mdf',       submitLimiter);

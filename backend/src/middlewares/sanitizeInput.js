@@ -19,7 +19,7 @@ const handleValidationErrors = (req, res, next) => {
   if (!errors.isEmpty()) {
     return res.status(422).json({
       message: 'Data tidak valid',
-      errors: errors.array().map((e) => ({ field: e.path, msg: e.msg })),
+      errors: errors.array().map((e) => ({ field: e.param, msg: e.msg })),
     });
   }
   next();

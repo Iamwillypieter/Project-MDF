@@ -97,22 +97,40 @@ export const AuthProvider = ({ children }) => {
         return;
       }
 
-      // Validasi token ke backend
+      // ── Optimistic Auth ──────────────────────────────────────────────────
+      // Set user dari localStorage DULU agar tidak ada white screen saat refresh.
+      // Loading selesai di sini, user langsung masuk dashboard.
+      try {
+        const parsed = JSON.parse(storedUser);
+        setToken(storedToken);
+        setUser(parsed);
+      } catch (e) {
+        clearSession();
+        setLoading(false);
+        return;
+      }
+      setLoading(false);
+
+      // Validasi token ke backend di background (silent).
+      // Kalau token ternyata expired/invalid → logout tanpa ganggu UX.
       try {
         const res = await axios.get(`${API_URL}/auth/me`, {
           headers: { Authorization: `Bearer ${storedToken}` },
           timeout: 8000,
         });
-        // Token valid → set state
-        setToken(storedToken);
+        // Token masih valid → refresh data user & expiry
         setUser(res.data.user);
-        // Refresh expiry
         persistSession(storedToken, res.data.user);
       } catch (err) {
-        // Token expired atau invalid → hapus session
-        clearSession();
-      } finally {
-        setLoading(false);
+        // Hanya logout kalau server tegas menolak token (401/403)
+        // Kalau network error / timeout → biarkan user tetap login
+        const status = err.response && err.response.status;
+        if (status === 401 || status === 403) {
+          clearSession();
+          setToken(null);
+          setUser(null);
+        }
+        // Network error / timeout: user tetap bisa pakai app
       }
     };
 

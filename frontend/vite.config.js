@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [
     react(),
   ],
-  base: './',  // path relatif agar asset jalan saat di-serve dari Express
+  base: '/',   // path absolut — asset selalu dicari dari root, benar di URL manapun
   server: {
     host: '0.0.0.0',
     port: 5173,

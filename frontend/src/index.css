@@ -11,3 +11,93 @@ body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   PRINT STYLES  —  @media print
+   Sembunyikan semua UI web, tampilkan hanya konten #print-area
+   ═══════════════════════════════════════════════════════════════ */
+@media print {
+  /* Sembunyikan semua elemen UI */
+  body > *:not(#print-root) { display: none !important; }
+
+  /* Sembunyikan elemen yang tidak relevan */
+  .no-print,
+  nav,
+  .navbar,
+  button,
+  input,
+  select,
+  textarea { display: none !important; }
+
+  /* Reset body untuk cetak */
+  body {
+    margin: 0;
+    padding: 0;
+    background: white !important;
+    font-family: 'Arial', sans-serif;
+    font-size: 10pt;
+    color: #000 !important;
+  }
+
+  /* Area cetak */
+  #print-root {
+    display: block !important;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%;
+    z-index: 99999;
+    background: white;
+  }
+
+  /* Dokumen cetak */
+  .print-document {
+    width: 100%;
+    max-width: 100%;
+    padding: 8mm 10mm;
+    background: white !important;
+    color: #000 !important;
+  }
+
+  /* Tabel cetak */
+  .print-document table {
+    border-collapse: collapse !important;
+    width: 100% !important;
+    font-size: 8.5pt !important;
+  }
+
+  .print-document th,
+  .print-document td {
+    border: 0.5pt solid #333 !important;
+    padding: 2.5pt 4pt !important;
+    color: #000 !important;
+    background: white !important;
+  }
+
+  .print-document th {
+    background: #e8f4f0 !important;
+    font-weight: bold !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Page break */
+  .print-page-break { page-break-before: always !important; }
+  .print-avoid-break { page-break-inside: avoid !important; }
+
+  /* Header seksi */
+  .print-section-header {
+    background: #2d7a65 !important;
+    color: white !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Page setup */
+  @page {
+    margin: 8mm 10mm;
+    size: A4 landscape;
+  }
+
+  /* Khusus laporan portrait */
+  @page .portrait { size: A4 portrait; }
+}

@@ -4,6 +4,8 @@ import axios from 'axios';
 import { formatWIB } from '../../utils/formatTime';
 import TableSkeleton from '../ui/TableSkeleton';
 import Spinner from '../ui/Spinner';
+import PrintButton from '../ui/PrintButton';
+import usePrint from '../print/PrintModal';
 
 const API_URL = `http://${window.location.hostname}:5000/api`;
 
@@ -44,8 +46,17 @@ const JENIS_CONFIG = {
   },
 };
 
+// Map jenis laporan → print type (sesuai CONFIG di PrintModal)
+const PRINT_TYPE = {
+  produksi: 'mdf',
+  chipper:  'chipper',
+  cooling:  'cooling',
+  imal:     'imal',
+};
+
 const LaporanTable = ({ token, userRole }) => {
   const navigate = useNavigate();
+  const { triggerPrint } = usePrint();
 
   const [historyList,   setHistoryList]   = useState([]);
   const [isLoading,     setIsLoading]     = useState(true);
@@ -53,6 +64,23 @@ const LaporanTable = ({ token, userRole }) => {
   const [deletingId,    setDeletingId]    = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [deleteError,   setDeleteError]   = useState('');
+  const [printingId,    setPrintingId]    = useState(null);
+  const [printError,    setPrintError]    = useState('');
+
+  const handlePrint = async (item) => {
+    const type = PRINT_TYPE[item.jenis];
+    if (!type) return;
+    const key = `${item.jenis}-${item.id}`;
+    setPrintingId(key);
+    setPrintError('');
+    await triggerPrint({
+      type,
+      id: item.id,
+      token,
+      onError: (msg) => setPrintError(msg),
+    });
+    setPrintingId(null);
+  };
 
   // ── Fetch semua 4 endpoint paralel saat mount ─────────────────
   useEffect(() => {
@@ -140,6 +168,15 @@ const LaporanTable = ({ token, userRole }) => {
         </div>
       )}
 
+      {printError && (
+        <div className="mb-3 bg-amber-50 border border-amber-200 text-amber-700
+                        rounded-lg px-4 py-3 text-sm flex justify-between items-center">
+          <span>⚠️ {printError}</span>
+          <button onClick={() => setPrintError('')}
+            className="text-amber-400 hover:text-amber-600 text-lg leading-none ml-4">×</button>
+        </div>
+      )}
+
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
         <div className="flex items-center px-5 py-3 border-b border-slate-100 bg-slate-50">
           <span className="text-sm font-semibold text-slate-600">
@@ -200,6 +237,13 @@ const LaporanTable = ({ token, userRole }) => {
                                      bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors">
                           Lihat
                         </button>
+
+                        {/* Print — semua role */}
+                        <PrintButton
+                          size="sm"
+                          loading={printingId === `${item.jenis}-${item.id}`}
+                          onClick={() => handlePrint(item)}
+                        />
 
                         {/* Edit + Hapus — HANYA admin */}
                         {userRole === 'admin' && (

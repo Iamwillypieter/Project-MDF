@@ -4,6 +4,8 @@ import axios from 'axios';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
 import TableSkeleton from '../components/ui/TableSkeleton';
+import PrintButton from '../components/ui/PrintButton';
+import usePrint from '../components/print/PrintModal';
 
 const API_URL = `http://${window.location.hostname}:5000/api`;
 
@@ -31,6 +33,7 @@ const formatDateTime = (val) => {
  */
 const HistorySanding = () => {
   const { token } = useAuth();
+  const { triggerPrint } = usePrint();
 
   const [laporanSanding,     setLaporanSanding]     = useState([]);
   const [laporanKertasPasir, setLaporanKertasPasir] = useState([]);
@@ -38,7 +41,22 @@ const HistorySanding = () => {
   const [loadingKertas,      setLoadingKertas]      = useState(true);
   const [errorSanding,       setErrorSanding]       = useState('');
   const [errorKertas,        setErrorKertas]        = useState('');
-  const [activeTab,          setActiveTab]          = useState('sanding'); // 'sanding' | 'kertas'
+  const [activeTab,          setActiveTab]          = useState('sanding');
+  const [printingId,         setPrintingId]         = useState(null);
+  const [printError,         setPrintError]         = useState('');
+
+  const handlePrint = async (type, id) => {
+    const key = `${type}-${id}`;
+    setPrintingId(key);
+    setPrintError('');
+    await triggerPrint({
+      type,
+      id,
+      token,
+      onError: (msg) => setPrintError(msg),
+    });
+    setPrintingId(null);
+  };
 
   useEffect(() => {
     const headers = { Authorization: `Bearer ${token}` };
@@ -144,6 +162,13 @@ const HistorySanding = () => {
               <div className="px-6 py-4 text-sm text-red-600 bg-red-50">❌ {errorSanding}</div>
             )}
 
+            {printError && activeTab === 'sanding' && (
+              <div className="px-6 py-3 text-sm text-amber-700 bg-amber-50 flex justify-between items-center">
+                <span>⚠️ {printError}</span>
+                <button onClick={() => setPrintError('')} className="text-amber-400 hover:text-amber-600 text-lg">×</button>
+              </div>
+            )}
+
             {loadingSanding ? (
               <TableSkeleton rows={4} cols={6} />
             ) : laporanSanding.length === 0 ? (
@@ -182,12 +207,19 @@ const HistorySanding = () => {
                         <td className="py-3 px-4 text-slate-500 text-xs">{formatDateTime(row.created_at)}</td>
                         <td className="py-3 px-4 text-slate-600">{row.operator_name || '-'}</td>
                         <td className="py-3 px-4 text-center">
-                          <Link
-                            to={`/sending/laporan-hasil-sanding/edit/${row.id}`}
-                            className="text-xs font-semibold text-blue-600 hover:text-blue-800 hover:underline"
-                          >
-                            Edit
-                          </Link>
+                          <div className="flex items-center justify-center gap-2">
+                            <PrintButton
+                              size="sm"
+                              loading={printingId === `sanding-${row.id}`}
+                              onClick={() => handlePrint('sanding', row.id)}
+                            />
+                            <Link
+                              to={`/sending/laporan-hasil-sanding/edit/${row.id}`}
+                              className="text-xs font-semibold text-blue-600 hover:text-blue-800 hover:underline"
+                            >
+                              Edit
+                            </Link>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -212,6 +244,13 @@ const HistorySanding = () => {
 
             {errorKertas && (
               <div className="px-6 py-4 text-sm text-red-600 bg-red-50">❌ {errorKertas}</div>
+            )}
+
+            {printError && activeTab === 'kertas' && (
+              <div className="px-6 py-3 text-sm text-amber-700 bg-amber-50 flex justify-between items-center">
+                <span>⚠️ {printError}</span>
+                <button onClick={() => setPrintError('')} className="text-amber-400 hover:text-amber-600 text-lg">×</button>
+              </div>
             )}
 
             {loadingKertas ? (
@@ -252,12 +291,19 @@ const HistorySanding = () => {
                         <td className="py-3 px-4 text-slate-500 text-xs">{formatDateTime(row.created_at)}</td>
                         <td className="py-3 px-4 text-slate-600">{row.operator_name || '-'}</td>
                         <td className="py-3 px-4 text-center">
-                          <Link
-                            to={`/sending/laporan-kertas-pasir/edit/${row.id}`}
-                            className="text-xs font-semibold text-blue-600 hover:text-blue-800 hover:underline"
-                          >
-                            Edit
-                          </Link>
+                          <div className="flex items-center justify-center gap-2">
+                            <PrintButton
+                              size="sm"
+                              loading={printingId === `kertas-pasir-${row.id}`}
+                              onClick={() => handlePrint('kertas-pasir', row.id)}
+                            />
+                            <Link
+                              to={`/sending/laporan-kertas-pasir/edit/${row.id}`}
+                              className="text-xs font-semibold text-blue-600 hover:text-blue-800 hover:underline"
+                            >
+                              Edit
+                            </Link>
+                          </div>
                         </td>
                       </tr>
                     ))}

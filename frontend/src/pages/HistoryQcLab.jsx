@@ -4,6 +4,8 @@ import axios from 'axios';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
 import TableSkeleton from '../components/ui/TableSkeleton';
+import PrintButton from '../components/ui/PrintButton';
+import usePrint from '../components/print/PrintModal';
 
 const API_URL = `http://${window.location.hostname}:5000/api`;
 
@@ -51,6 +53,21 @@ const StatusBadge = ({ status }) => {
 const HistoryQcLab = () => {
   const { token, user } = useAuth();
   const canEdit = user?.role === 'qc_lab' || user?.role === 'admin';
+  const { triggerPrint } = usePrint();
+  const [printingId, setPrintingId] = useState(null);
+  const [printError, setPrintError] = useState('');
+
+  const handlePrint = async (id) => {
+    setPrintingId(id);
+    setPrintError('');
+    await triggerPrint({
+      type: 'qclab-shift',
+      id,
+      token,
+      onError: (msg) => setPrintError(msg),
+    });
+    setPrintingId(null);
+  };
 
   const [shiftReports, setShiftReports] = useState([]);
   const [loadingShift, setLoadingShift] = useState(true);
@@ -160,6 +177,13 @@ const HistoryQcLab = () => {
               </div>
             </div>
 
+          {printError && (
+              <div className="px-6 py-3 text-sm text-red-600 bg-red-50 flex justify-between items-center">
+                <span>❌ {printError}</span>
+                <button onClick={() => setPrintError('')} className="text-red-400 hover:text-red-600 text-lg">×</button>
+              </div>
+            )}
+
             {errorShift && (
               <div className="px-6 py-4 text-sm text-red-600 bg-red-50">❌ {errorShift}</div>
             )}
@@ -243,13 +267,19 @@ const HistoryQcLab = () => {
                           )}
                         </td>
                         <td className="py-3 px-4">
-                          <div className="flex items-center justify-center gap-3">
+                          <div className="flex items-center justify-center gap-2">
                             <Link
                               to={`/qclab/quality-shift-report/detail/${row.id}`}
                               className="text-xs font-semibold text-teal-600 hover:text-teal-800 hover:underline whitespace-nowrap"
                             >
                               Detail
                             </Link>
+                            <PrintButton
+                              size="sm"
+                              label="Cetak"
+                              loading={printingId === row.id}
+                              onClick={() => handlePrint(row.id)}
+                            />
                             {canEdit && (
                               <Link
                                 to={`/qclab/quality-shift-report/edit/${row.id}`}

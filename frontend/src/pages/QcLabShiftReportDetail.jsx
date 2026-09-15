@@ -4,6 +4,8 @@ import axios from 'axios';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
 import LoadingState from '../components/ui/LoadingState';
+import PrintButton from '../components/ui/PrintButton';
+import usePrint from '../components/print/PrintModal';
 
 const API_URL = `http://${window.location.hostname}:5000/api`;
 
@@ -88,6 +90,19 @@ const QcLabShiftReportDetail = () => {
   const [laporan,  setLaporan]  = useState(null);
   const [loading,  setLoading]  = useState(true);
   const [error,    setError]    = useState('');
+  const { triggerPrint }        = usePrint();
+  const [isPrinting, setIsPrinting] = useState(false);
+
+  const handlePrint = async () => {
+    setIsPrinting(true);
+    await triggerPrint({
+      type: 'qclab-shift',
+      id,
+      token,
+      onError: (msg) => console.error('[Print]', msg),
+    });
+    setIsPrinting(false);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -175,6 +190,13 @@ const QcLabShiftReportDetail = () => {
             </div>
 
             <div className="flex items-center gap-2 flex-wrap">
+              <PrintButton
+                size="md"
+                variant="solid"
+                label="Cetak Laporan"
+                loading={isPrinting}
+                onClick={handlePrint}
+              />
               {canEdit && (
                 <Link
                   to={`/qclab/quality-shift-report/edit/${id}`}
@@ -797,14 +819,23 @@ const QcLabShiftReportDetail = () => {
           >
             ← Kembali ke History
           </button>
-          {canEdit && (
-            <Link
-              to={`/qclab/quality-shift-report/edit/${id}`}
-              className="px-5 py-2 rounded-lg text-sm font-semibold text-white bg-teal-600 hover:bg-teal-700 transition-colors no-underline"
-            >
-              ✏️ Edit Laporan Ini
-            </Link>
-          )}
+          <div className="flex gap-2">
+            <PrintButton
+              size="md"
+              variant="solid"
+              label="Cetak Laporan"
+              loading={isPrinting}
+              onClick={handlePrint}
+            />
+            {canEdit && (
+              <Link
+                to={`/qclab/quality-shift-report/edit/${id}`}
+                className="px-5 py-2 rounded-lg text-sm font-semibold text-white bg-teal-600 hover:bg-teal-700 transition-colors no-underline"
+              >
+                ✏️ Edit Laporan Ini
+              </Link>
+            )}
+          </div>
         </div>
 
       </main>
